@@ -1,0 +1,2 @@
+# Do not incluide config.json. This file is specific to each setup and may contain keys.
+config.json
