@@ -4,6 +4,9 @@
 ### calibrate.py
 Run this file to generate calibration values for `config.json`
 
+### api.py
+Contains the methods to access the API via Python.
+
 ### configuration.py
 Import this to access the save/load methods for configuration options.
 
