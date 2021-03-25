@@ -13,5 +13,10 @@
   },
   "nbis": {
     "bin": "/media/pi/usb/nbis/build/bin"
+  },
+  "api": {
+    "key": "change this to your API key",
+    "url": "change this to the URL of the API",
+    "crt": "change this to the certificate file for the API"
   }
 }
