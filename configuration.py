@@ -15,7 +15,7 @@ def load():
 def save(config):
     with open("config.json.tmp", "w") as config_file:
         try:
-            json.dump(config, config_file)
+            json.dump(config, config_file, indent=4)
         except:
             os.remove("config.json.tmp")
             return False
