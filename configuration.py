@@ -21,3 +21,8 @@ def save(config):
             return False
     os.replace("config.json.tmp", "config.json")  # json.dump will garble files on error
     return True
+
+
+if __name__ == '__main__':
+    config = load()
+    save(config)
