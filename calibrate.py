@@ -1,17 +1,12 @@
 import sys
 import cv2
 import numpy as py
-import os
 import time
-import json
-import jsonmerge
 from ctypes import *
 
-with open("config.json" if os.path.exists("config.json") else "config.default.json", "r") as config_file, \
-        open("config.default.json", "r") as default_config_file:
-    default_config = json.load(default_config_file)
-    config = json.load(config_file)
-    config = jsonmerge.merge(default_config, config)
+import configuration
+
+config = configuration.load()
 
 arducam_vcm = CDLL(config['arducam']['lib'])
 
@@ -96,13 +91,7 @@ def save_config():
     while cmd.lower() != "n" and cmd.lower() != "y":
         cmd = input("Write to config.json? [y/N]: ")
     if cmd.lower()[0] == "y":
-        with open("config.json.tmp", "w") as config_file:
-            try:
-                json.dump(config, config_file)
-            except:
-                os.remove("config.json.tmp")
-                sys.exit(1)
-        os.replace("config.json.tmp", "config.json")  # json.dump will garble files on error
+        configuration.save(config)
 
 
 while True:
