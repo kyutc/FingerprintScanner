@@ -19,12 +19,13 @@ except:
 # Setup the camera using the currently save or default configuration
 arducam_vcm.vcm_init()
 camera = picamera.PiCamera()
+time.sleep(0.5)
 camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-time.sleep(0.1)
+time.sleep(0.5)
 arducam_vcm.vcm_write(config['arducam']['focus'])
-time.sleep(0.1)
+time.sleep(0.5)
 camera.shutter_speed = config['arducam']['shutterspeed']
-time.sleep(0.1)
+time.sleep(0.5)
 
 
 def calibrate_resolution():
@@ -43,7 +44,7 @@ def calibrate_resolution():
         config['arducam']['resolution']['x'] = int(py.clip(config['arducam']['resolution']['x'] + cmd, 100, 1944))
         config['arducam']['resolution']['y'] = config['arducam']['resolution']['x']
         camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-        time.sleep(0.1)
+        time.sleep(0.5)
     camera.stop_preview()
 
 
@@ -61,7 +62,7 @@ def calibrate_shutterspeed():
         # TODO: Confirm range
         config['arducam']['shutterspeed'] = int(py.clip(config['arducam']['shutterspeed'] + cmd, 1000, 200000))
         camera.shutter_speed = config['arducam']['shutterspeed']
-        time.sleep(0.1)
+        time.sleep(0.5)
     camera.stop_preview()
 
 
@@ -78,7 +79,7 @@ def calibrate_focus():
             continue
         config['arducam']['focus'] = int(py.clip(config['arducam']['focus'] + cmd, 0, 1023))  # TypeError if not cast
         arducam_vcm.vcm_write(config['arducam']['focus'])
-        time.sleep(0.1)
+        time.sleep(0.5)
     camera.stop_preview()
 
 
