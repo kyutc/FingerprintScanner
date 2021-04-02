@@ -3,13 +3,48 @@
     "lib": "/media/pi/usb/ArduCAM/RaspberryPi/Motorized_Focus_Camera/python/lib/libarducam_vcm.so",
     "focus": 825,
     "resolution": {
-      "x": 1812, "y": 1812
+      "x": 1812,
+      "y": 1812
     },
     "shutterspeed": 30000
   },
   "transform": {
-    "src": [[100, 100],[1712, 100],[100, 1712],[1712, 1712]],
-    "dst": [[0, 0],[1500, 0],[0, 1500],[1500, 1500]]
+    "src": [
+      [
+        100,
+        100
+      ],
+      [
+        1712,
+        100
+      ],
+      [
+        100,
+        1712
+      ],
+      [
+        1712,
+        1712
+      ]
+    ],
+    "dst": [
+      [
+        0,
+        0
+      ],
+      [
+        1500,
+        0
+      ],
+      [
+        0,
+        1500
+      ],
+      [
+        1500,
+        1500
+      ]
+    ]
   },
   "nbis": {
     "bin": "/media/pi/usb/nbis/build/bin"
@@ -18,5 +53,6 @@
     "key": "change this to your API key",
     "url": "change this to the URL of the API",
     "crt": "change this to the certificate file for the API"
-  }
+  },
+  "tmp": "/tmp/fingerprint_scanner"
 }
