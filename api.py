@@ -44,3 +44,10 @@ def get_user_templates(username):
         return False
 
     return request('get_user_templates', {'username': username})
+
+
+def get_all_templates(username):
+    if not check_username_length(username):
+        return False
+
+    return request('get_all_templates', {})
