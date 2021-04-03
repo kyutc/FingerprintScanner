@@ -22,21 +22,22 @@ except:
 
 
 arducam_vcm.vcm_init()
+time.sleep(1.5)
 camera = picamera.PiCamera()
-time.sleep(0.5)
+time.sleep(1.5)
 camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-time.sleep(0.5)
+time.sleep(1.5)
 arducam_vcm.vcm_write(config['arducam']['focus'])
-time.sleep(0.5)
+time.sleep(1.5)
 camera.shutter_speed = config['arducam']['shutterspeed']
-time.sleep(0.5)
+time.sleep(1.5)
 
 
 def enrollment():
     nbis_path = Path(config['nbis']['bin'])
     candidates = []
 
-    # Obtain higher quality images
+    ### NFIQ
     i = 0
     while len(candidates) < 10:
         while False:
@@ -58,6 +59,21 @@ def enrollment():
             candidates.insert(i, {'name': fingername, 'quality': quality})
 
     print(candidates)
+
+    ### MINDTCT
+    try:
+        os.chdir(config['tmp'])
+    except:
+        print("Failed to change directory")
+        sys.exit(1)
+
+    for candidate in candidates:
+        subprocess.run([str(nbis_path / 'mindtct'), candidate['name'], str(tmp / candidate['name'])], stdout=subprocess.PIPE)
+        print("MINDTCT has ran, check output directory!")
+
+    ## BOZORTH3
+
+
 
 
 enrollment()
