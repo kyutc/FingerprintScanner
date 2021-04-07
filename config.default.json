@@ -47,7 +47,9 @@
     ]
   },
   "nbis": {
-    "bin": "/media/pi/usb/nbis/build/bin"
+    "bin": "/media/pi/usb/nbis/build/bin",
+    "nfiq_quality_threshold": 1,
+    "bozorth3_threshold": 200
   },
   "api": {
     "key": "change this to your API key",
