@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 from ctypes import *
 import camera_helper
+import nbis
 
 config = configuration.load()
 arducam_vcm = CDLL(config['arducam']['lib'])
@@ -37,15 +38,11 @@ def enrollment():
             if api.check_username_length(username): break
             print("Username must be within 4-32 characters.")
 
-        raw = picamera.array.PiRGBArray(camera)
-        camera.capture(raw, format="bgr", use_video_port=True)
-        image = raw.array
-        image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         i += 1
         fingername = 'finger' + str(i) + '.png'
-        cv2.imwrite(str(tmp / fingername), image_gray)
+        camera_helper.capture_gray_raw(camera, tmp / fingername)
 
-        quality = int(subprocess.run([str(nbis_path / 'nfiq'), str(tmp / fingername)], stdout=subprocess.PIPE).stdout.decode())
+        quality = nbis.get_nfiq_quality(tmp / fingername)
         print("Quality: " + str(quality) + " count: " + str(len(candidates)))
         if (quality <= 3):
             candidates.insert(i, {'name': fingername, 'quality': quality})
@@ -53,14 +50,9 @@ def enrollment():
     print(candidates)
 
     ### MINDTCT
-    try:
-        os.chdir(config['tmp'])
-    except:
-        print("Failed to change directory")
-        sys.exit(1)
-
     for candidate in candidates:
-        subprocess.run([str(nbis_path / 'mindtct'), candidate['name'], str(tmp / candidate['name'])], stdout=subprocess.PIPE)
+        subprocess.run([str(nbis_path / 'mindtct'), candidate['name'], str(tmp / candidate['name'])],
+                       stdout=subprocess.PIPE, cwd=config['tmp'])
         print("MINDTCT has ran, check output directory!")
 
     ## BOZORTH3
