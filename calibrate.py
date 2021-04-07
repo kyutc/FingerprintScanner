@@ -18,14 +18,15 @@ except:
 
 # Setup the camera using the currently save or default configuration
 arducam_vcm.vcm_init()
+time.sleep(1.5)
 camera = picamera.PiCamera()
-time.sleep(0.5)
+time.sleep(1.5)
 camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-time.sleep(0.5)
+time.sleep(1.5)
 arducam_vcm.vcm_write(config['arducam']['focus'])
-time.sleep(0.5)
+time.sleep(1.5)
 camera.shutter_speed = config['arducam']['shutterspeed']
-time.sleep(0.5)
+time.sleep(1.5)
 
 
 def calibrate_resolution():
