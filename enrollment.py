@@ -10,6 +10,7 @@ import api
 from pathlib import Path
 import subprocess
 from ctypes import *
+import camera_helper
 
 config = configuration.load()
 arducam_vcm = CDLL(config['arducam']['lib'])
@@ -21,16 +22,7 @@ except:
     print("Directory exists")
 
 
-arducam_vcm.vcm_init()
-time.sleep(1.5)
-camera = picamera.PiCamera()
-time.sleep(1.5)
-camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-time.sleep(1.5)
-arducam_vcm.vcm_write(config['arducam']['focus'])
-time.sleep(1.5)
-camera.shutter_speed = config['arducam']['shutterspeed']
-time.sleep(1.5)
+camera = camera_helper.get_camera()
 
 
 def enrollment():

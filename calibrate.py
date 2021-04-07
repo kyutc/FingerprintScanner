@@ -5,28 +5,10 @@ import time
 from ctypes import *
 
 import configuration
+import camera_helper
 
 config = configuration.load()
-
-arducam_vcm = CDLL(config['arducam']['lib'])
-
-try:
-    import picamera
-    from picamera.array import PiRGBArray
-except:
-    sys.exit(0)
-
-# Setup the camera using the currently save or default configuration
-arducam_vcm.vcm_init()
-time.sleep(1.5)
-camera = picamera.PiCamera()
-time.sleep(1.5)
-camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-time.sleep(1.5)
-arducam_vcm.vcm_write(config['arducam']['focus'])
-time.sleep(1.5)
-camera.shutter_speed = config['arducam']['shutterspeed']
-time.sleep(1.5)
+camera = camera_helper.get_camera()
 
 
 def calibrate_resolution():
@@ -79,7 +61,7 @@ def calibrate_focus():
         except:
             continue
         config['arducam']['focus'] = int(py.clip(config['arducam']['focus'] + cmd, 0, 1023))  # TypeError if not cast
-        arducam_vcm.vcm_write(config['arducam']['focus'])
+        camera_helper.set_focus(config['arducam']['focus'])
         time.sleep(0.5)
     camera.stop_preview()
 
