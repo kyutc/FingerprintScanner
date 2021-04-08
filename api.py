@@ -31,6 +31,7 @@ def check_username_length(username):
 
 
 def enroll(username, classification, template):
+    classification = classification.lower()
     if not check_username_length(username):
         return False
     if classification not in valid_classifications:
