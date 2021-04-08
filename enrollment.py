@@ -12,52 +12,38 @@ import subprocess
 from ctypes import *
 import camera_helper
 import nbis
+import tempfile
 
 config = configuration.load()
-arducam_vcm = CDLL(config['arducam']['lib'])
-tmp = Path(config['tmp'])
+tmp_path = Path(config['tmp'])
+images_path = tmp_path / 'images'
+templates_path = tmp_path / 'templates'
+camera = camera_helper.get_camera()
 
 try:
-    os.mkdir(config['tmp'])  # Dir where we are storing temporary files
-except:
-    print("Directory exists")
-
-
-camera = camera_helper.get_camera()
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    images_path.mkdir(parents=True, exist_ok=True)
+    templates_path.mkdir(parents=True, exist_ok=True)
+except: pass
 
 
 def enrollment():
-    nbis_path = Path(config['nbis']['bin'])
-    candidates = []
-
-    ### NFIQ
     i = 0
-    while len(candidates) < 10:
-        while False:
-            username = input("Username: ")
-            if api.check_username_length(username): break
-            print("Username must be within 4-32 characters.")
-
+    while True:
+        start = time.time()
         i += 1
-        fingername = 'finger' + str(i) + '.png'
-        camera_helper.capture_gray_raw(camera, tmp / fingername)
-
-        quality = nbis.get_nfiq_quality(tmp / fingername)
-        print("Quality: " + str(quality) + " count: " + str(len(candidates)))
-        if (quality <= 3):
-            candidates.insert(i, {'name': fingername, 'quality': quality})
-
-    print(candidates)
-
-    ### MINDTCT
-    for candidate in candidates:
-        subprocess.run([str(nbis_path / 'mindtct'), candidate['name'], str(tmp / candidate['name'])],
-                       stdout=subprocess.PIPE, cwd=config['tmp'])
-        print("MINDTCT has ran, check output directory!")
-
-    ## BOZORTH3
-
-
+        fingername = 'finger%04d.png' % i
+        camera_helper.capture_gray_raw(camera, images_path / fingername)
+        quality = nbis.get_nfiq_quality(images_path / fingername)
+        print("Quality: %d" % quality)
+        if quality > config['nbis']['nfiq_quality_threshold']:
+            continue
+        (classification, confidence) = nbis.get_classification(images_path / fingername)
+        print("Classification: %s, confidence: %f" % (classification, confidence))
+        nbis.generate_mindtct_templates(images_path / fingername, templates_path / fingername)
+        bozorth3_score = nbis.get_bozorth3_score(templates_path / (fingername + '.xyt'), templates_path / (fingername + '.xyt'))
+        print("Self bozorth3 score: %d" % bozorth3_score)
+        print("Took %f seconds" % (time.time() - start))
 
 
 enrollment()
