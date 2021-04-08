@@ -26,14 +26,44 @@ except:
     sys.exit(1)
 
 
-def _discard(i):
-    files = glob.glob(str(tmp_path / _fingername(i)))
+def _discard(prefix, i):
+    files = glob.glob(str(tmp_path / _fingername(prefix, i)))
     for file in files:
         os.remove(file)
 
 
-def _fingername(i):
-    return 'finger%04d.png' % i
+def _fingername(prefix, i):
+    return prefix + 'finger%04d.png' % i
+
+
+def get_template(prefix, i):
+    while True:
+        fingername = _fingername(prefix, i)
+        camera_helper.capture_gray_raw(camera, tmp_path / fingername)
+        quality = nbis.get_nfiq_quality(tmp_path / fingername)
+        print("Quality: %d" % quality)
+        if quality > config['nbis']['nfiq_quality_threshold']:
+            print("Quality must be %d or better (lower), discarding." % config['nbis']['nfiq_quality_threshold'])
+            _discard(prefix, i)
+            continue
+
+        (classification, confidence) = nbis.get_classification(tmp_path / fingername)
+        print("Classification: %s, confidence: %1.2f%%" % (classification, confidence * 100))
+        if confidence < config['nbis']['pcasys_confidence_threshold']:
+            print("Confidence must be %1.2f%% or better, discarding." % config['nbis']['pcasys_confidence_threshold'])
+            _discard(prefix, i)
+            continue
+
+        nbis.generate_mindtct_templates(tmp_path / fingername, tmp_path / fingername)
+
+        bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / (fingername + '.xyt'))
+        print("Self bozorth3 score: %d" % bozorth3_score)
+        if bozorth3_score < 300:
+            print("Bozorth3 self score must be 300 or better, discarding." % bozorth3_score)
+            _discard(prefix, i)
+            continue
+        break
+    return quality, classification, confidence, bozorth3_score
 
 
 def enrollment():
@@ -45,38 +75,11 @@ def enrollment():
 
     bozorth3_matrix = [[0 for i in range(config['nbis']['enrollment_candidates_target'])]
                        for j in range(config['nbis']['enrollment_candidates_target'])]
+    bozorth3_averages = [0 for i in range(config['nbis']['enrollment_candidates_target'])]
 
     i = 0
-    bozorth3_averages = [0 for i in range(config['nbis']['enrollment_candidates_target'])]
     while i < (config['nbis']['enrollment_candidates_target']):
-        fingername = _fingername(i)
-        camera_helper.capture_gray_raw(camera, tmp_path / fingername)
-        quality = nbis.get_nfiq_quality(tmp_path / fingername)
-        print("Quality: %d" % quality)
-        if quality > config['nbis']['nfiq_quality_threshold']:
-            print("Quality must be %d or better (lower), discarding." % config['nbis']['nfiq_quality_threshold'])
-            _discard(i)
-            continue
-
-        (classification, confidence) = nbis.get_classification(tmp_path / fingername)
-        print("Classification: %s, confidence: %1.2f%%" % (classification, confidence * 100))
-        if confidence < config['nbis']['pcasys_confidence_threshold']:
-            print("Confidence must be %1.2f%% or better, discarding." % config['nbis']['pcasys_confidence_threshold'])
-            _discard(i)
-            continue
-
-        nbis.generate_mindtct_templates(tmp_path / fingername, tmp_path / fingername)
-
-        bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / (fingername + '.xyt'))
-        print("Self bozorth3 score: %d" % bozorth3_score)
-        if bozorth3_score < 300:
-            print("Bozorth3 self score must be 300 or better, discarding." % bozorth3_score)
-            _discard(i)
-            continue
-
-        # Choosing not to include self-bozorth3 since minimum self is checked and it'll affect
-        # the real-world average score
-        bozorth3_matrix[i][i] = 0
+        (quality, classification, confidence, bozorth3_score) = get_template('enrollment', i)
         i += 1
 
     for i in range(len(bozorth3_matrix)):
@@ -88,13 +91,14 @@ def enrollment():
                 sum += bozorth3_matrix[i][k]
                 continue
             # Per the documentation, comparing A to B and B to A is not worthwhile
-            bozorth3_matrix[i][k] = nbis.get_bozorth3_score(tmp_path / (_fingername(i) + '.xyt'),
-                                                            tmp_path / (_fingername(k) + '.xyt'))
+            bozorth3_matrix[i][k] = nbis.get_bozorth3_score(tmp_path / (_fingername('enrollment', i) + '.xyt'),
+                                                            tmp_path / (_fingername('enrollment', k) + '.xyt'))
             bozorth3_matrix[k][i] = bozorth3_matrix[i][k]
             sum += bozorth3_matrix[i][k]
         bozorth3_averages[i] = sum / (config['nbis']['enrollment_candidates_target'] - 1)
 
-    template_file_h = Path.open(tmp_path / (_fingername(bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'), 'r')
+    template_file_h = Path.open(tmp_path / (_fingername('enrollment',
+                                                        bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'), 'r')
     template = template_file_h.read()
     template_file_h.close()
     result = api.enroll(username, classification, template)
