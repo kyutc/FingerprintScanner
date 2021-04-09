@@ -25,7 +25,7 @@ class CameraHelper(object):
     @classmethod
     def capture_gray_raw(cls, path: Path) -> None:
         raw = picamera.array.PiRGBArray(cls.camera)
-        cls.camera.capture(raw, format="bgr", use_video_port=True)
+        cls.camera.capture(raw, format="rgb", use_video_port=True)
         image = raw.array
         image = image[cls.config['crop']['y'][0]:cls.config['crop']['y'][1], cls.config['crop']['x'][0]:cls.config['crop']['x'][1]]
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
