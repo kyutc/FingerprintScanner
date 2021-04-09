@@ -26,18 +26,24 @@ def verification(config: dict) -> bool:
     if len(templates) == 0:
         return False
 
+    i = 0
+    for template in templates:
+        write_out(tmp_path / ('verification%04d.xyt' % i), template['template'])
+        i += 1
+
     while True:
+        i = 0
         (_, classification, _, _, fingername) = enrollment.get_template('verification', 0, config)
         for template in templates:
             if template['classification'] != classification:
                 continue
-            write_out(tmp_path / 'verification.xyt', template['template'])
-            bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / 'verification.xyt')
+            bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('verification%04d.xyt' % i))
             print("Score: %d" % bozorth3_score)
 
             if bozorth3_score >= config['nbis']['bozorth3_threshold']:
                 print("Match found! %d" % bozorth3_score)
                 return True
+            i += 1
         print("No match found!")
     return False
 
