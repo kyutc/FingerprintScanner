@@ -16,17 +16,9 @@ import nbis
 import tempfile
 import glob
 
-config = configuration.load()
-tmp_path = Path(config['tmp'])
-camera = camera_helper.get_camera()
 
-try:
-    tmp_path.mkdir(exist_ok=True)
-except:
-    sys.exit(1)
-
-
-def _discard(prefix, i):
+def _discard(prefix, i, config):
+    tmp_path = Path(config['tmp'])
     files = glob.glob(str(tmp_path / _fingername(prefix, i)))
     for file in files:
         os.remove(file)
@@ -36,7 +28,8 @@ def _fingername(prefix, i):
     return prefix + 'finger%04d.png' % i
 
 
-def get_template(prefix, i):
+def get_template(prefix, i, camera, config):
+    tmp_path = Path(config['tmp'])
     while True:
         fingername = _fingername(prefix, i)
         camera_helper.capture_gray_raw(camera, tmp_path / fingername)
@@ -44,14 +37,14 @@ def get_template(prefix, i):
         print("Quality: %d" % quality)
         if quality > config['nbis']['nfiq_quality_threshold']:
             print("Quality must be %d or better (lower), discarding." % config['nbis']['nfiq_quality_threshold'])
-            _discard(prefix, i)
+            _discard(prefix, i, config)
             continue
 
         (classification, confidence) = nbis.get_classification(tmp_path / fingername)
         print("Classification: %s, confidence: %1.2f%%" % (classification, confidence * 100))
         if confidence < config['nbis']['pcasys_confidence_threshold']:
             print("Confidence must be %1.2f%% or better, discarding." % config['nbis']['pcasys_confidence_threshold'])
-            _discard(prefix, i)
+            _discard(prefix, i, config)
             continue
 
         nbis.generate_mindtct_templates(tmp_path / fingername, tmp_path / fingername)
@@ -60,13 +53,13 @@ def get_template(prefix, i):
         print("Self bozorth3 score: %d" % bozorth3_score)
         if bozorth3_score < 300:
             print("Bozorth3 self score must be 300 or better, discarding." % bozorth3_score)
-            _discard(prefix, i)
+            _discard(prefix, i, config)
             continue
         break
-    return quality, classification, confidence, bozorth3_score
+    return quality, classification, confidence, bozorth3_score, fingername
 
 
-def enrollment():
+def enrollment(camera, config):
     username = ''
     while len(username) == 0:
         username = input("Username: ")
@@ -79,7 +72,7 @@ def enrollment():
 
     i = 0
     while i < (config['nbis']['enrollment_candidates_target']):
-        (quality, classification, confidence, bozorth3_score) = get_template('enrollment', i)
+        (_, classification, confidence, _, _) = get_template('enrollment', i, camera, config)
         i += 1
 
     for i in range(len(bozorth3_matrix)):
@@ -105,4 +98,14 @@ def enrollment():
     print(result['message'])
 
 
-enrollment()
+if __name__ == '__main__':
+    config = configuration.load()
+    tmp_path = Path(config['tmp'])
+
+    try:
+        tmp_path.mkdir(exist_ok=True)
+    except:
+        sys.exit(1)
+
+    camera = camera_helper.get_camera()
+    enrollment(camera, config)
