@@ -30,7 +30,7 @@ def get_classification(image_file):
               "verbose y\n")
     output = subprocess.run([str(nbis_path / 'pcasys'), image_prs_file], stdout=subprocess.PIPE).stdout.decode()
     matches = re.search(r'is [WSLRTA]; nn: hyp [WSLRTA], conf [0-1]\.[0-9][0-9]; conup [yn]; hyp ([WSLRTA]), conf ([0-1]\.[0-9][0-9])', output)
-    return matches.group(1), float(matches.group(2))
+    return matches.group(1).lower(), float(matches.group(2))
 
 
 def generate_mindtct_templates(image_file, out_root):
