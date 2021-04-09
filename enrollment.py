@@ -95,6 +95,8 @@ def enrollment(config: dict) -> None:
     template = template_file_h.read()
     template_file_h.close()
     result = api.enroll(username, classification, template)
+    print("Round-robin average bozorth3 scores: ")
+    print(bozorth3_averages)
     print(result['message'])
 
 
