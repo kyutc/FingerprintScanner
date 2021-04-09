@@ -47,8 +47,5 @@ def get_user_templates(username: str) -> Union[dict, bool]:
     return request('get_user_templates', {'username': username})
 
 
-def get_all_templates(username: str) -> Union[dict, bool]:
-    if not check_username_length(username):
-        return False
-
+def get_all_templates() -> Union[dict]:
     return request('get_all_templates', {})
