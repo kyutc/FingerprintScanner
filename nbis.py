@@ -38,5 +38,9 @@ def generate_mindtct_templates(image_file: Path, out_root: Path) -> None:
 
 
 def get_bozorth3_score(xyt_file_a: Path, xyt_file_b: Path) -> int:
-    return int(subprocess.run([str(nbis_path / 'bozorth3'), str(xyt_file_a), str(xyt_file_b)],
+    try:
+        result = int(subprocess.run([str(nbis_path / 'bozorth3'), str(xyt_file_a), str(xyt_file_b)],
                               stdout=subprocess.PIPE).stdout.decode())
+    except:  # In general this will only fail if there is a programming error or the template itself is invalid
+        return 0
+    return result
