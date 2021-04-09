@@ -1,29 +1,35 @@
 from ctypes import *
-import configuration
 import picamera
+import picamera.array
 import cv2
 from pathlib import Path
 
-config = configuration.load()
-arducam_vcm = CDLL(config['arducam']['lib'])
 
+class CameraHelper(object):
+    camera = None
+    config = None
+    arducam_vcm = None
 
-def get_camera():
-    arducam_vcm.vcm_init()
-    camera = picamera.PiCamera()
-    camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
-    camera.shutter_speed = config['arducam']['shutterspeed']
-    set_focus(config['arducam']['focus'])
-    return camera
+    @classmethod
+    def init(cls, config):
+        if cls.camera is not None:
+            return
+        cls.config = config
+        cls.arducam_vcm = CDLL(config['arducam']['lib'])
+        cls.arducam_vcm.vcm_init()
+        cls.camera = picamera.PiCamera()
+        cls.camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
+        cls.camera.shutter_speed = config['arducam']['shutterspeed']
+        cls.set_focus(config['arducam']['focus'])
 
+    @classmethod
+    def capture_gray_raw(cls, path):
+        raw = picamera.array.PiRGBArray(cls.camera)
+        cls.camera.capture(raw, format="bgr", use_video_port=True)
+        image = raw.array
+        image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        cv2.imwrite(str(path), image_gray)
 
-def capture_gray_raw(camera, path):
-    raw = picamera.array.PiRGBArray(camera)
-    camera.capture(raw, format="bgr", use_video_port=True)
-    image = raw.array
-    image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    cv2.imwrite(str(path), image_gray)
-
-
-def set_focus(focus):
-    arducam_vcm.vcm_write(focus)
+    @classmethod
+    def set_focus(cls, focus):
+        cls.arducam_vcm.vcm_write(focus)

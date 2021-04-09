@@ -5,7 +5,7 @@ from pathlib import Path
 import api
 import nbis
 import configuration
-import camera_helper
+from camera_helper import CameraHelper
 import enrollment
 
 
@@ -15,7 +15,7 @@ def write_out(file, content):
     file_h.close()
 
 
-def verification(camera, config):
+def verification(config):
     tmp_path = Path(config['tmp'])
     username = ''
     while username == '':
@@ -27,7 +27,7 @@ def verification(camera, config):
         return False
 
     while True:
-        (_, classification, _, _, fingername) = enrollment.get_template('verification', 0, camera, config)
+        (_, classification, _, _, fingername) = enrollment.get_template('verification', 0, config)
         for template in templates:
             if template['classification'] != classification:
                 continue
@@ -44,5 +44,5 @@ def verification(camera, config):
 
 if __name__ == '__main__':
     config = configuration.load()
-    camera = camera_helper.get_camera()
-    verification(camera, config)
+    CameraHelper.init(config)
+    verification(config)

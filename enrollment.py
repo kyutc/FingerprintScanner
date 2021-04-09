@@ -11,7 +11,7 @@ import api
 from pathlib import Path
 import subprocess
 from ctypes import *
-import camera_helper
+from camera_helper import CameraHelper
 import nbis
 import tempfile
 import glob
@@ -28,11 +28,11 @@ def _fingername(prefix, i):
     return prefix + 'finger%04d.png' % i
 
 
-def get_template(prefix, i, camera, config):
+def get_template(prefix, i, config):
     tmp_path = Path(config['tmp'])
     while True:
         fingername = _fingername(prefix, i)
-        camera_helper.capture_gray_raw(camera, tmp_path / fingername)
+        CameraHelper.capture_gray_raw(tmp_path / fingername)
         quality = nbis.get_nfiq_quality(tmp_path / fingername)
         print("Quality: %d" % quality)
         if quality > config['nbis']['nfiq_quality_threshold']:
@@ -59,7 +59,7 @@ def get_template(prefix, i, camera, config):
     return quality, classification, confidence, bozorth3_score, fingername
 
 
-def enrollment(camera, config):
+def enrollment(config):
     username = ''
     while len(username) == 0:
         username = input("Username: ")
@@ -72,7 +72,7 @@ def enrollment(camera, config):
 
     i = 0
     while i < (config['nbis']['enrollment_candidates_target']):
-        (_, classification, confidence, _, _) = get_template('enrollment', i, camera, config)
+        (_, classification, confidence, _, _) = get_template('enrollment', i, config)
         i += 1
 
     for i in range(len(bozorth3_matrix)):
@@ -107,5 +107,5 @@ if __name__ == '__main__':
     except:
         sys.exit(1)
 
-    camera = camera_helper.get_camera()
-    enrollment(camera, config)
+    CameraHelper.init(config)
+    enrollment(config)
