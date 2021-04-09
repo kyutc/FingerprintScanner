@@ -27,8 +27,9 @@ class CameraHelper(object):
         raw = picamera.array.PiRGBArray(cls.camera)
         cls.camera.capture(raw, format="bgr", use_video_port=True)
         image = raw.array
-        image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        cv2.imwrite(str(path), image_gray)
+        image = image[cls.config['crop']['y'][0]:cls.config['crop']['y'][1], cls.config['crop']['x'][0]:cls.config['crop']['x'][1]]
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        cv2.imwrite(str(path), image)
 
     @classmethod
     def set_focus(cls, focus: int) -> None:

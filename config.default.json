@@ -46,6 +46,7 @@
       ]
     ]
   },
+  "crop": {"y": [617, 1327], "x": [445, 1504]},
   "nbis": {
     "bin": "/media/pi/usb/nbis/build/bin",
     "nfiq_quality_threshold": 1,
