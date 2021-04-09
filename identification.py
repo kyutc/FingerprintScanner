@@ -39,6 +39,7 @@ def identification(config: dict) -> Union[dict, bool]:
                 print("Match found! %d" % bozorth3_score)
                 print("User identified: %s" % template['name'])
                 return template
+            i += 1
         print("No match found!")
     return False
 
