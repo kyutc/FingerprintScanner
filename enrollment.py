@@ -17,18 +17,18 @@ import tempfile
 import glob
 
 
-def _discard(prefix, i, config):
+def _discard(prefix: str, i: int, config: dict) -> None:
     tmp_path = Path(config['tmp'])
     files = glob.glob(str(tmp_path / _fingername(prefix, i)))
     for file in files:
         os.remove(file)
 
 
-def _fingername(prefix, i):
+def _fingername(prefix: str, i: int) -> str:
     return prefix + 'finger%04d.png' % i
 
 
-def get_template(prefix, i, config):
+def get_template(prefix: str, i: int, config: dict) -> (int, str, float, int, str):
     tmp_path = Path(config['tmp'])
     while True:
         fingername = _fingername(prefix, i)
@@ -59,7 +59,7 @@ def get_template(prefix, i, config):
     return quality, classification, confidence, bozorth3_score, fingername
 
 
-def enrollment(config):
+def enrollment(config: dict) -> None:
     username = ''
     while len(username) == 0:
         username = input("Username: ")

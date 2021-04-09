@@ -1,14 +1,14 @@
 import urllib3
 import json
 import codecs
-
+from typing import Union
 import configuration
 
 config = configuration.load()
 valid_classifications = ['l', 'r', 'a', 't', 'w', 's']
 
 
-def request(api, args):
+def request(api: str, args: dict) -> dict:
     reader = codecs.getreader('utf-8')
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
                                ca_certs=config['api']['crt'])
@@ -26,11 +26,11 @@ def request(api, args):
     return result
 
 
-def check_username_length(username):
+def check_username_length(username: str) -> bool:
     return (len(username) >= 4) and (len(username) <= 32)
 
 
-def enroll(username, classification, template):
+def enroll(username: str, classification: str, template: str) -> Union[dict, bool]:
     classification = classification.lower()
     if not check_username_length(username):
         return False
@@ -40,14 +40,14 @@ def enroll(username, classification, template):
     return request('enroll', {'username': username, 'classification': classification, 'template': template})
 
 
-def get_user_templates(username):
+def get_user_templates(username: str) -> Union[dict, bool]:
     if not check_username_length(username):
         return False
 
     return request('get_user_templates', {'username': username})
 
 
-def get_all_templates(username):
+def get_all_templates(username: str) -> Union[dict, bool]:
     if not check_username_length(username):
         return False
 

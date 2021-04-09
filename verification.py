@@ -9,13 +9,13 @@ from camera_helper import CameraHelper
 import enrollment
 
 
-def write_out(file, content):
+def write_out(file: str, content: str) -> None:
     file_h = Path.open(Path(file), 'w')
     file_h.write(content)
     file_h.close()
 
 
-def verification(config):
+def verification(config: dict) -> bool:
     tmp_path = Path(config['tmp'])
     username = ''
     while username == '':

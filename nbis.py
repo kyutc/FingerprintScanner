@@ -8,18 +8,18 @@ nbis_path = Path(config['nbis']['bin'])
 tmp_path = Path(config['tmp'])
 
 
-def write_out(file, content):
+def write_out(file: str, content: str) -> None:
     file_h = Path.open(Path(file), 'w')
     file_h.write(content)
     file_h.close()
 
 
-def get_nfiq_quality(image_file):
+def get_nfiq_quality(image_file: Path) -> int:
     return int(subprocess.run([str(nbis_path / 'nfiq'), str(image_file)], stdout=subprocess.PIPE,
                               cwd=tmp_path).stdout.decode())
 
 
-def get_classification(image_file):
+def get_classification(image_file: Path) -> (str, float):
     image_txt_file = ('../' * 10) + str(image_file) + '.txt'
     image_prs_file = (str(image_file) + '.prs')
     write_out(image_txt_file, ('../' * 10) + str(image_file) + ' S')
@@ -33,10 +33,10 @@ def get_classification(image_file):
     return matches.group(1).lower(), float(matches.group(2))
 
 
-def generate_mindtct_templates(image_file, out_root):
+def generate_mindtct_templates(image_file: Path, out_root: Path) -> None:
     subprocess.run([str(nbis_path / 'mindtct'), str(image_file), str(out_root)], stdout=subprocess.PIPE)
 
 
-def get_bozorth3_score(xyt_file_a, xyt_file_b):
+def get_bozorth3_score(xyt_file_a: Path, xyt_file_b: Path) -> int:
     return int(subprocess.run([str(nbis_path / 'bozorth3'), str(xyt_file_a), str(xyt_file_b)],
                               stdout=subprocess.PIPE).stdout.decode())

@@ -6,12 +6,12 @@ from pathlib import Path
 
 
 class CameraHelper(object):
-    camera = None
-    config = None
-    arducam_vcm = None
+    camera: picamera.PiCamera = None
+    config: {} = None
+    arducam_vcm: CDLL = None
 
     @classmethod
-    def init(cls, config):
+    def init(cls, config: {}) -> None:
         if cls.camera is not None:
             return
         cls.config = config
@@ -23,7 +23,7 @@ class CameraHelper(object):
         cls.set_focus(config['arducam']['focus'])
 
     @classmethod
-    def capture_gray_raw(cls, path):
+    def capture_gray_raw(cls, path: Path) -> None:
         raw = picamera.array.PiRGBArray(cls.camera)
         cls.camera.capture(raw, format="bgr", use_video_port=True)
         image = raw.array
@@ -31,5 +31,5 @@ class CameraHelper(object):
         cv2.imwrite(str(path), image_gray)
 
     @classmethod
-    def set_focus(cls, focus):
+    def set_focus(cls, focus: int) -> None:
         cls.arducam_vcm.vcm_write(focus)
