@@ -16,22 +16,23 @@ def write_out(file: str, content: str) -> None:
 
 def identification(config: dict) -> Union[dict, bool]:
     tmp_path = Path(config['tmp'])
-    username = ''
-    while username == '':
-        username = input("Username: ")
-        if not api.check_username_length(username):
-            username = ''
+
     templates = api.get_all_templates()['result']
     if len(templates) == 0:
         return False
 
+    i = 0
+    for template in templates:
+        write_out(tmp_path / ('identification%04d.xyt' % i), template['template'])
+        i += 1
+
     while True:
+        i = 0
         (_, classification, _, _, fingername) = enrollment.get_template('identification', 0, config)
         for template in templates:
             if template['classification'] != classification:
                 continue
-            write_out(tmp_path / 'identification.xyt', template['template'])
-            bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / 'identification.xyt')
+            bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('identification%04d.xyt' % i))
             print("Score: %d" % bozorth3_score)
 
             if bozorth3_score >= config['nbis']['bozorth3_threshold']:
