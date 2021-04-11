@@ -67,10 +67,6 @@ def calibrate_focus():
     camera.stop_preview()
 
 
-def calibrate_transform():
-    print("NOT IMPLEMENTED")
-
-
 def save_config():
     cmd = ""
     while cmd.lower() != "n" and cmd.lower() != "y":
@@ -85,7 +81,6 @@ while True:
     print("[1] Calibrate resolution")
     print("[2] Calibrate shutter speed")
     print("[3] Calibrate focus")
-    print("[4] Calibrate transform (NOT IMPLEMENTED)")
     print("[8] Save configuration")
     print("[9] Exit")
 
@@ -100,8 +95,6 @@ while True:
         calibrate_shutterspeed()
     if cmd == 0 or cmd == 3:
         calibrate_focus()
-    if cmd == 0 or cmd == 4:
-        calibrate_transform()
     if cmd == 8:
         save_config()
     if cmd == 9:
