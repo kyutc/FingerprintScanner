@@ -85,6 +85,7 @@ class FingerprintScanner:
         i = 0
         while i < cls.enrollment_candidates_target:
             (_, classification, confidence, _, _) = cls.get_template('enrollment', i)
+            cls.status.on_enrollment_update(i+1, cls.enrollment_candidates_target)
             i += 1
 
         for i in range(len(bozorth3_matrix)):

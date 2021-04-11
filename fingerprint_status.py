@@ -34,6 +34,10 @@ class FingerprintStatus(FingerprintStatusInterface):
             print("Bozorth3 self-score %d is lower than %d" % (got, need))
 
     @classmethod
+    def on_enrollment_update(cls, current: int, required: int):
+        print("Obtained %d/%d enrollment template candidates" % (current, required))
+
+    @classmethod
     def on_verification_result(cls, verified: bool) -> None:
         if verified:
             print("User verified!")

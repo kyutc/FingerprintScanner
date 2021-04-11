@@ -23,6 +23,10 @@ class FingerprintStatusInterface:
         pass
 
     @classmethod
+    def on_enrollment_update(cls, current: int, required: int):
+        pass
+
+    @classmethod
     def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float]) -> None:
         pass
 
