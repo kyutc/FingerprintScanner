@@ -32,9 +32,10 @@ def verification(config: dict) -> bool:
         i += 1
 
     while True:
-        i = 0
+        i = -1
         (_, classification, _, _, fingername) = enrollment.get_template('verification', 0, config)
         for template in templates:
+            i += 1
             if template['classification'] != classification:
                 continue
             bozorth3_score = NBIS.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('verification%04d.xyt' % i))
@@ -43,7 +44,6 @@ def verification(config: dict) -> bool:
             if bozorth3_score >= config['nbis']['bozorth3_threshold']:
                 print("Match found! %d" % bozorth3_score)
                 return True
-            i += 1
         print("No match found!")
     return False
 

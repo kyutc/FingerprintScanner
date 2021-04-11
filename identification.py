@@ -27,9 +27,10 @@ def identification(config: dict) -> Union[dict, bool]:
         i += 1
 
     while True:
-        i = 0
+        i = -1
         (_, classification, _, _, fingername) = enrollment.get_template('identification', 0, config)
         for template in templates:
+            i += 1
             if template['classification'] != classification:
                 continue
             bozorth3_score = NBIS.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('identification%04d.xyt' % i))
@@ -39,7 +40,6 @@ def identification(config: dict) -> Union[dict, bool]:
                 print("Match found! %d" % bozorth3_score)
                 print("User identified: %s" % template['name'])
                 return template
-            i += 1
         print("No match found!")
     return False
 
