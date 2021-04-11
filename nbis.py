@@ -31,8 +31,8 @@ class NBIS:
     def get_classification(cls, image_file: Path) -> (str, float):
         image_txt_file = ('../' * 10) + str(image_file) + '.txt'
         image_prs_file = (str(image_file) + '.prs')
-        write_file(image_txt_file, ('../' * 10) + str(image_file) + ' S')
-        write_file(image_prs_file,
+        write_file(Path(image_txt_file), ('../' * 10) + str(image_file) + ' S')
+        write_file(Path(image_prs_file),
                    "demo_images_list %s\n" % image_txt_file +
                    "outfile /dev/null\n"
                    "clobber_outfile y\n"
