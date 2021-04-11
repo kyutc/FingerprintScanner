@@ -10,7 +10,7 @@ import subprocess
 from ctypes import *
 import glob
 import os
-from typing import Union, List, Dict
+from typing import Union
 
 from nbis import NBIS
 from camera_helper import CameraHelper
@@ -113,7 +113,7 @@ class FingerprintScanner:
         return classification, template
 
     @classmethod
-    def verification(cls, templates: List[Dict[str, str]]) -> bool:
+    def verification(cls, templates: dict) -> bool:
         i = 0
         for template in templates:
             write_file(cls.tmp_path / ('verification%04d.xyt' % i), template['template'])
@@ -134,7 +134,7 @@ class FingerprintScanner:
         return False
 
     @classmethod
-    def identification(cls, templates: List[Dict[str, str]]) -> Union[dict, bool]:
+    def identification(cls, templates: dict) -> Union[dict, bool]:
         i = 0
         for template in templates:
             write_file(cls.tmp_path / ('identification%04d.xyt' % i), template['template'])

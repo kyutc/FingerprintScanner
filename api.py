@@ -6,7 +6,6 @@ from pathlib import Path
 
 
 class API:
-    VALID_CLASSIFICATIONS = ['l', 'r', 'a', 't', 'w', 's']
     key: str = None
     url: str = None
     crt: Path = None
@@ -16,10 +15,6 @@ class API:
         cls.key = key
         cls.url = url
         cls.crt = crt
-
-    @classmethod
-    def check_username_length(cls, username: str) -> bool:
-        return (len(username) >= 4) and (len(username) <= 32)
 
     @classmethod
     def request(cls, api: str, args: dict) -> dict:
@@ -41,19 +36,10 @@ class API:
 
     @classmethod
     def enroll(cls, username: str, classification: str, template: str) -> Union[dict, bool]:
-        classification = classification.lower()
-        if not cls.check_username_length(username):
-            return False
-        if classification not in cls.VALID_CLASSIFICATIONS:
-            return False
-
         return cls.request('enroll', {'username': username, 'classification': classification, 'template': template})
 
     @classmethod
     def get_user_templates(cls, username: str) -> Union[dict, bool]:
-        if not cls.check_username_length(username):
-            return False
-
         return cls.request('get_user_templates', {'username': username})
 
     @classmethod
