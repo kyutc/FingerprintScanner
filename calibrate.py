@@ -5,10 +5,11 @@ import time
 from ctypes import *
 
 import configuration
-import camera_helper
+from camera_helper import CameraHelper
 
 config = configuration.load()
-camera = camera_helper.get_camera()
+CameraHelper.init(config)
+camera = CameraHelper.camera
 
 
 def calibrate_resolution():
@@ -61,7 +62,7 @@ def calibrate_focus():
         except:
             continue
         config['arducam']['focus'] = int(py.clip(config['arducam']['focus'] + cmd, 0, 1023))  # TypeError if not cast
-        camera_helper.set_focus(config['arducam']['focus'])
+        CameraHelper.set_focus(config['arducam']['focus'])
         time.sleep(0.5)
     camera.stop_preview()
 
