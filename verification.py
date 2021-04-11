@@ -7,12 +7,7 @@ from nbis import NBIS
 import configuration
 from camera_helper import CameraHelper
 import enrollment
-
-
-def write_out(file: str, content: str) -> None:
-    file_h = Path.open(Path(file), 'w')
-    file_h.write(content)
-    file_h.close()
+from util_helper import *
 
 
 def verification(config: dict) -> bool:
@@ -28,7 +23,7 @@ def verification(config: dict) -> bool:
 
     i = 0
     for template in templates:
-        write_out(tmp_path / ('verification%04d.xyt' % i), template['template'])
+        write_file(tmp_path / ('verification%04d.xyt' % i), template['template'])
         i += 1
 
     while True:

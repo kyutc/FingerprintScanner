@@ -1,12 +1,7 @@
 from pathlib import Path
 import subprocess
 import re
-
-
-def write_out(file: str, content: str) -> None:
-    file_h = Path.open(Path(file), 'w')
-    file_h.write(content)
-    file_h.close()
+from util_helper import *
 
 
 class NBIS:
@@ -35,12 +30,12 @@ class NBIS:
     def get_classification(cls, image_file: Path) -> (str, float):
         image_txt_file = ('../' * 10) + str(image_file) + '.txt'
         image_prs_file = (str(image_file) + '.prs')
-        write_out(image_txt_file, ('../' * 10) + str(image_file) + ' S')
-        write_out(image_prs_file,
-                  "demo_images_list %s\n" % image_txt_file +
-                  "outfile /dev/null\n"
-                  "clobber_outfile y\n"
-                  "verbose y\n")
+        write_file(image_txt_file, ('../' * 10) + str(image_file) + ' S')
+        write_file(image_prs_file,
+                   "demo_images_list %s\n" % image_txt_file +
+                   "outfile /dev/null\n"
+                   "clobber_outfile y\n"
+                   "verbose y\n")
         output = subprocess.run([str(cls.pcasys_path), image_prs_file], stdout=subprocess.PIPE).stdout.decode()
         matches = re.search(
             r'is [WSLRTA]; nn: hyp [WSLRTA], conf [0-1]\.[0-9][0-9]; conup [yn]; hyp ([WSLRTA]), conf ([0-1]\.[0-9][0-9])',

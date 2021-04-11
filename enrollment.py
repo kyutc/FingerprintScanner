@@ -15,7 +15,7 @@ from camera_helper import CameraHelper
 from nbis import NBIS
 import tempfile
 import glob
-
+from util_helper import *
 
 def _discard(prefix: str, i: int, config: dict) -> None:
     tmp_path = Path(config['tmp'])
@@ -90,10 +90,8 @@ def enrollment(config: dict) -> None:
             sum += bozorth3_matrix[i][k]
         bozorth3_averages[i] = sum / (config['nbis']['enrollment_candidates_target'] - 1)
 
-    template_file_h = Path.open(tmp_path / (_fingername('enrollment',
-                                                        bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'), 'r')
-    template = template_file_h.read()
-    template_file_h.close()
+    template = read_file(tmp_path / (_fingername('enrollment',
+                                                        bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'))
     result = api.enroll(username, classification, template)
     print("Round-robin average bozorth3 scores: ")
     print(bozorth3_averages)
