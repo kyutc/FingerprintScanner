@@ -16,9 +16,11 @@ from api import API
 from nbis import NBIS
 from camera_helper import CameraHelper
 from util_helper import *
+from fingerprint_status_interface import FingerprintStatusInterface
 
 
 class FingerprintScanner:
+    status: FingerprintStatusInterface = None
     tmp_path: Path = None
     nfiq_quality_threshold: int = None
     bozorth3_threshold: int = None
@@ -26,8 +28,9 @@ class FingerprintScanner:
     enrollment_candidates_target: int = None
 
     @classmethod
-    def init(cls, tmp_path: Path, nfiq_quality_threshold: int, bozorth3_threshold: int,
-             pcasys_confidence_threshold: float, enrollment_candidates_target: int) -> None:
+    def init(cls, status: FingerprintStatusInterface, tmp_path: Path, nfiq_quality_threshold: int,
+             bozorth3_threshold: int, pcasys_confidence_threshold: float, enrollment_candidates_target: int) -> None:
+        cls.status = status
         cls.tmp_path = tmp_path
         cls.nfiq_quality_threshold = nfiq_quality_threshold
         cls.bozorth3_threshold = bozorth3_threshold
@@ -50,27 +53,27 @@ class FingerprintScanner:
             fingername = cls._fingername(prefix, i)
             CameraHelper.capture_gray_raw(cls.tmp_path / fingername)
             quality = NBIS.get_nfiq_quality(cls.tmp_path / fingername)
-            print("Quality: %d" % quality)
             if quality > cls.nfiq_quality_threshold:
-                print("Quality must be %d or better (lower), discarding." % cls.nfiq_quality_threshold)
+                cls.status.on_quality(False, cls.nfiq_quality_threshold, quality)
                 cls._discard(prefix, i)
                 continue
+            cls.status.on_quality(True, cls.nfiq_quality_threshold, quality)
 
             (classification, confidence) = NBIS.get_classification(cls.tmp_path / fingername)
-            print("Classification: %s, confidence: %1.2f%%" % (classification, confidence * 100))
             if confidence < cls.pcasys_confidence_threshold:
-                print("Confidence must be %1.2f%% or better, discarding." % cls.pcasys_confidence_threshold)
+                cls.status.on_classification(False, classification, cls.pcasys_confidence_threshold, confidence)
                 cls._discard(prefix, i)
                 continue
+            cls.status.on_classification(True, classification, cls.pcasys_confidence_threshold, confidence)
 
             NBIS.generate_mindtct_templates(cls.tmp_path / fingername, cls.tmp_path / fingername)
 
             bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'), cls.tmp_path / (fingername + '.xyt'))
-            print("Self bozorth3 score: %d" % bozorth3_score)
             if bozorth3_score < 300:
-                print("Bozorth3 self score must be 300 or better, discarding." % bozorth3_score)
+                cls.status.on_scoring_self(False, 300, bozorth3_score)
                 cls._discard(prefix, i)
                 continue
+            cls.status.on_scoring_self(True, 300, bozorth3_score)
             break
         return quality, classification, confidence, bozorth3_score, fingername
 
@@ -109,9 +112,7 @@ class FingerprintScanner:
         template = read_file(cls.tmp_path / (cls._fingername('enrollment',
                                                             bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'))
         result = API.enroll(username, classification, template)
-        print("Round-robin average bozorth3 scores: ")
-        print(bozorth3_averages)
-        print(result['message'])
+        cls.status.on_enrollment_result(True, bozorth3_averages, username)
 
     @classmethod
     def verification(cls) -> bool:
@@ -141,9 +142,9 @@ class FingerprintScanner:
                 print("Score: %d" % bozorth3_score)
 
                 if bozorth3_score >= cls.bozorth3_threshold:
-                    print("Match found! %d" % bozorth3_score)
+                    cls.status.on_verification_result(True)
                     return True
-            print("No match found!")
+            cls.status.on_verification_result(False)
         return False
 
     @classmethod
@@ -166,11 +167,8 @@ class FingerprintScanner:
                     continue
                 bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
                                                          cls.tmp_path / ('identification%04d.xyt' % i))
-                print("Score: %d" % bozorth3_score)
-
                 if bozorth3_score >= cls.bozorth3_threshold:
-                    print("Match found! %d" % bozorth3_score)
-                    print("User identified: %s" % template['name'])
+                    cls.status.on_identification_result(True, template['name'])
                     return template
-            print("No match found!")
+            cls.status.on_identification_result(False, None)
         return False
