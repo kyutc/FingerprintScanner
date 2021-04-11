@@ -2,50 +2,60 @@ import urllib3
 import json
 import codecs
 from typing import Union
-import configuration
-
-config = configuration.load()
-valid_classifications = ['l', 'r', 'a', 't', 'w', 's']
+from pathlib import Path
 
 
-def request(api: str, args: dict) -> dict:
-    reader = codecs.getreader('utf-8')
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
-                               ca_certs=config['api']['crt'])
+class API:
+    VALID_CLASSIFICATIONS = ['l', 'r', 'a', 't', 'w', 's']
+    key: str = None
+    url: str = None
+    crt: Path = None
 
-    fields = {'api_key': config['api']['key']}
-    fields.update(args)
+    @classmethod
+    def init(cls, key: str, url: str, crt: Path):
+        cls.key = key
+        cls.url = url
+        cls.crt = crt
 
-    response = http.request("POST",
-                            config['api']['url'] + api,
-                            fields=fields,
-                            preload_content=False)
+    @classmethod
+    def check_username_length(cls, username: str) -> bool:
+        return (len(username) >= 4) and (len(username) <= 32)
 
-    result = json.load(reader(response))
-    response.release_conn()
-    return result
+    @classmethod
+    def request(cls, api: str, args: dict) -> dict:
+        reader = codecs.getreader('utf-8')
+        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                   ca_certs=str(cls.crt))
 
+        fields = {'api_key': cls.key}
+        fields.update(args)
 
-def check_username_length(username: str) -> bool:
-    return (len(username) >= 4) and (len(username) <= 32)
+        response = http.request("POST",
+                                cls.url + api,
+                                fields=fields,
+                                preload_content=False)
 
+        result = json.load(reader(response))
+        response.release_conn()
+        return result
 
-def enroll(username: str, classification: str, template: str) -> Union[dict, bool]:
-    classification = classification.lower()
-    if not check_username_length(username):
-        return False
-    if classification not in valid_classifications:
-        return False
+    @classmethod
+    def enroll(cls, username: str, classification: str, template: str) -> Union[dict, bool]:
+        classification = classification.lower()
+        if not cls.check_username_length(username):
+            return False
+        if classification not in cls.VALID_CLASSIFICATIONS:
+            return False
 
-    return request('enroll', {'username': username, 'classification': classification, 'template': template})
+        return cls.request('enroll', {'username': username, 'classification': classification, 'template': template})
 
+    @classmethod
+    def get_user_templates(cls, username: str) -> Union[dict, bool]:
+        if not cls.check_username_length(username):
+            return False
 
-def get_user_templates(username: str) -> Union[dict, bool]:
-    if not check_username_length(username):
-        return False
+        return cls.request('get_user_templates', {'username': username})
 
-    return request('get_user_templates', {'username': username})
-
-
-def get_all_templates() -> Union[dict]:
-    return request('get_all_templates', {})
+    @classmethod
+    def get_all_templates(cls) -> Union[dict]:
+        return cls.request('get_all_templates', {})

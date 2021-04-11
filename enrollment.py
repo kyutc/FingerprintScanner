@@ -7,7 +7,7 @@ import os
 import sys
 import time
 import configuration
-import api
+from api import API
 from pathlib import Path
 import subprocess
 from ctypes import *
@@ -63,7 +63,7 @@ def enrollment(config: dict) -> None:
     username = ''
     while len(username) == 0:
         username = input("Username: ")
-        if not api.check_username_length(username):
+        if not API.check_username_length(username):
             username = ''
 
     bozorth3_matrix = [[0 for i in range(config['nbis']['enrollment_candidates_target'])]
@@ -92,7 +92,7 @@ def enrollment(config: dict) -> None:
 
     template = read_file(tmp_path / (_fingername('enrollment',
                                                         bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'))
-    result = api.enroll(username, classification, template)
+    result = API.enroll(username, classification, template)
     print("Round-robin average bozorth3 scores: ")
     print(bozorth3_averages)
     print(result['message'])
@@ -108,5 +108,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     CameraHelper.init(config)
+    API.init(config['api']['key'], config['api']['url'], Path(config['api']['crt']))
     NBIS.init(Path(config['nbis']['bin']))
     enrollment(config)

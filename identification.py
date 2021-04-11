@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 
-import api
+from api import API
 from nbis import NBIS
 import configuration
 from camera_helper import CameraHelper
@@ -12,7 +12,7 @@ from util_helper import *
 def identification(config: dict) -> Union[dict, bool]:
     tmp_path = Path(config['tmp'])
 
-    templates = api.get_all_templates()['result']
+    templates = API.get_all_templates()['result']
     if len(templates) == 0:
         return False
 
@@ -42,5 +42,6 @@ def identification(config: dict) -> Union[dict, bool]:
 if __name__ == '__main__':
     config = configuration.load()
     CameraHelper.init(config)
+    API.init(config['api']['key'], config['api']['url'], Path(config['api']['crt']))
     NBIS.init(Path(config['nbis']['bin']))
     identification(config)

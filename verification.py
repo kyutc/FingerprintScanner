@@ -2,7 +2,7 @@ import os
 import tempfile
 from pathlib import Path
 
-import api
+from api import API
 from nbis import NBIS
 import configuration
 from camera_helper import CameraHelper
@@ -15,9 +15,9 @@ def verification(config: dict) -> bool:
     username = ''
     while username == '':
         username = input("Username: ")
-        if not api.check_username_length(username):
+        if not API.check_username_length(username):
             username = ''
-    templates = api.get_user_templates(username)['result']
+    templates = API.get_user_templates(username)['result']
     if len(templates) == 0:
         return False
 
@@ -46,5 +46,6 @@ def verification(config: dict) -> bool:
 if __name__ == '__main__':
     config = configuration.load()
     CameraHelper.init(config)
+    API.init(config['api']['key'], config['api']['url'], Path(config['api']['crt']))
     NBIS.init(Path(config['nbis']['bin']))
     verification(config)
