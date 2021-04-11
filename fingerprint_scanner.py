@@ -10,7 +10,7 @@ import subprocess
 from ctypes import *
 import glob
 import os
-from typing import Union
+from typing import Union, List, Dict
 
 from api import API
 from nbis import NBIS
@@ -115,16 +115,7 @@ class FingerprintScanner:
         cls.status.on_enrollment_result(True, bozorth3_averages, username)
 
     @classmethod
-    def verification(cls) -> bool:
-        username = ''
-        while username == '':
-            username = input("Username: ")
-            if not API.check_username_length(username):
-                username = ''
-        templates = API.get_user_templates(username)['result']
-        if len(templates) == 0:
-            return False
-
+    def verification(cls, templates: List[Dict[str, str]]) -> bool:
         i = 0
         for template in templates:
             write_file(cls.tmp_path / ('verification%04d.xyt' % i), template['template'])
@@ -139,8 +130,6 @@ class FingerprintScanner:
                     continue
                 bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
                                                          cls.tmp_path / ('verification%04d.xyt' % i))
-                print("Score: %d" % bozorth3_score)
-
                 if bozorth3_score >= cls.bozorth3_threshold:
                     cls.status.on_verification_result(True)
                     return True
@@ -148,11 +137,7 @@ class FingerprintScanner:
         return False
 
     @classmethod
-    def identification(cls) -> Union[dict, bool]:
-        templates = API.get_all_templates()['result']
-        if len(templates) == 0:
-            return False
-
+    def identification(cls, templates: List[Dict[str, str]]) -> Union[dict, bool]:
         i = 0
         for template in templates:
             write_file(cls.tmp_path / ('identification%04d.xyt' % i), template['template'])
