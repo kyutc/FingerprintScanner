@@ -22,7 +22,8 @@ class NBIS:
     @classmethod
     def get_nfiq_quality(cls, image_file: Path) -> int:
         try:
-            return int(subprocess.run([str(cls.nfiq_path), str(image_file)], stdout=subprocess.PIPE).stdout.decode())
+            return int(subprocess.run([str(cls.nfiq_path), str(image_file)], stdout=subprocess.PIPE,
+                                      stderr=subprocess.DEVNULL).stdout.decode())
         except:
             return 100  # Arbitrarily low quality for an error condition
 
@@ -36,7 +37,8 @@ class NBIS:
                    "outfile /dev/null\n"
                    "clobber_outfile y\n"
                    "verbose y\n")
-        output = subprocess.run([str(cls.pcasys_path), image_prs_file], stdout=subprocess.PIPE).stdout.decode()
+        output = subprocess.run([str(cls.pcasys_path), image_prs_file], stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL).stdout.decode()
         matches = re.search(
             r'is [WSLRTA]; nn: hyp [WSLRTA], conf [0-1]\.[0-9][0-9]; conup [yn]; hyp ([WSLRTA]), conf ([0-1]\.[0-9][0-9])',
             output)
@@ -44,13 +46,14 @@ class NBIS:
 
     @classmethod
     def generate_mindtct_templates(cls, image_file: Path, out_root: Path) -> None:
-        subprocess.run([str(cls.mindtct_path), str(image_file), str(out_root)], stdout=subprocess.PIPE)
+        subprocess.run([str(cls.mindtct_path), str(image_file), str(out_root)], stdout=subprocess.PIPE,
+                       stderr=subprocess.DEVNULL)
 
     @classmethod
     def get_bozorth3_score(cls, xyt_file_a: Path, xyt_file_b: Path) -> int:
         try:
             result = int(subprocess.run([str(cls.bozorth3_path), str(xyt_file_a), str(xyt_file_b)],
-                                        stdout=subprocess.PIPE).stdout.decode())
+                                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode())
         except:
             return 0
         return result
