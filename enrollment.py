@@ -12,7 +12,7 @@ from pathlib import Path
 import subprocess
 from ctypes import *
 from camera_helper import CameraHelper
-import nbis
+from nbis import NBIS
 import tempfile
 import glob
 
@@ -33,23 +33,23 @@ def get_template(prefix: str, i: int, config: dict) -> (int, str, float, int, st
     while True:
         fingername = _fingername(prefix, i)
         CameraHelper.capture_gray_raw(tmp_path / fingername)
-        quality = nbis.get_nfiq_quality(tmp_path / fingername)
+        quality = NBIS.get_nfiq_quality(tmp_path / fingername)
         print("Quality: %d" % quality)
         if quality > config['nbis']['nfiq_quality_threshold']:
             print("Quality must be %d or better (lower), discarding." % config['nbis']['nfiq_quality_threshold'])
             _discard(prefix, i, config)
             continue
 
-        (classification, confidence) = nbis.get_classification(tmp_path / fingername)
+        (classification, confidence) = NBIS.get_classification(tmp_path / fingername)
         print("Classification: %s, confidence: %1.2f%%" % (classification, confidence * 100))
         if confidence < config['nbis']['pcasys_confidence_threshold']:
             print("Confidence must be %1.2f%% or better, discarding." % config['nbis']['pcasys_confidence_threshold'])
             _discard(prefix, i, config)
             continue
 
-        nbis.generate_mindtct_templates(tmp_path / fingername, tmp_path / fingername)
+        NBIS.generate_mindtct_templates(tmp_path / fingername, tmp_path / fingername)
 
-        bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / (fingername + '.xyt'))
+        bozorth3_score = NBIS.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / (fingername + '.xyt'))
         print("Self bozorth3 score: %d" % bozorth3_score)
         if bozorth3_score < 300:
             print("Bozorth3 self score must be 300 or better, discarding." % bozorth3_score)
@@ -84,7 +84,7 @@ def enrollment(config: dict) -> None:
                 sum += bozorth3_matrix[i][k]
                 continue
             # Per the documentation, comparing A to B and B to A is not worthwhile
-            bozorth3_matrix[i][k] = nbis.get_bozorth3_score(tmp_path / (_fingername('enrollment', i) + '.xyt'),
+            bozorth3_matrix[i][k] = NBIS.get_bozorth3_score(tmp_path / (_fingername('enrollment', i) + '.xyt'),
                                                             tmp_path / (_fingername('enrollment', k) + '.xyt'))
             bozorth3_matrix[k][i] = bozorth3_matrix[i][k]
             sum += bozorth3_matrix[i][k]
@@ -110,4 +110,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     CameraHelper.init(config)
+    NBIS.init(Path(config['nbis']['bin']))
     enrollment(config)

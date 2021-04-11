@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Union
 
 import api
-import nbis
+from nbis import NBIS
 import configuration
 from camera_helper import CameraHelper
 import enrollment
@@ -32,7 +32,7 @@ def identification(config: dict) -> Union[dict, bool]:
         for template in templates:
             if template['classification'] != classification:
                 continue
-            bozorth3_score = nbis.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('identification%04d.xyt' % i))
+            bozorth3_score = NBIS.get_bozorth3_score(tmp_path / (fingername + '.xyt'), tmp_path / ('identification%04d.xyt' % i))
             print("Score: %d" % bozorth3_score)
 
             if bozorth3_score >= config['nbis']['bozorth3_threshold']:
@@ -47,4 +47,5 @@ def identification(config: dict) -> Union[dict, bool]:
 if __name__ == '__main__':
     config = configuration.load()
     CameraHelper.init(config)
+    NBIS.init(Path(config['nbis']['bin']))
     identification(config)
