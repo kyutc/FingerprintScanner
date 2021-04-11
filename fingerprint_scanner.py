@@ -12,7 +12,6 @@ import glob
 import os
 from typing import Union, List, Dict
 
-from api import API
 from nbis import NBIS
 from camera_helper import CameraHelper
 from util_helper import *
@@ -78,13 +77,7 @@ class FingerprintScanner:
         return quality, classification, confidence, bozorth3_score, fingername
 
     @classmethod
-    def enrollment(cls) -> None:
-        username = ''
-        while len(username) == 0:
-            username = input("Username: ")
-            if not API.check_username_length(username):
-                username = ''
-
+    def enrollment(cls) -> (str, str):
         bozorth3_matrix = [[0 for i in range(cls.enrollment_candidates_target)]
                            for j in range(cls.enrollment_candidates_target)]
         bozorth3_averages = [0.0 for i in range(cls.enrollment_candidates_target)]
@@ -111,8 +104,8 @@ class FingerprintScanner:
 
         template = read_file(cls.tmp_path / (cls._fingername('enrollment',
                                                             bozorth3_averages.index(max(bozorth3_averages))) + '.xyt'))
-        result = API.enroll(username, classification, template)
-        cls.status.on_enrollment_result(True, bozorth3_averages, username)
+        cls.status.on_enrollment_result(True, bozorth3_averages)
+        return classification, template
 
     @classmethod
     def verification(cls, templates: List[Dict[str, str]]) -> bool:
@@ -121,19 +114,18 @@ class FingerprintScanner:
             write_file(cls.tmp_path / ('verification%04d.xyt' % i), template['template'])
             i += 1
 
-        while True:
-            i = -1
-            (_, classification, _, _, fingername) = cls.get_template('verification', 0)
-            for template in templates:
-                i += 1
-                if template['classification'] != classification:
-                    continue
-                bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
-                                                         cls.tmp_path / ('verification%04d.xyt' % i))
-                if bozorth3_score >= cls.bozorth3_threshold:
-                    cls.status.on_verification_result(True)
-                    return True
-            cls.status.on_verification_result(False)
+        i = -1
+        (_, classification, _, _, fingername) = cls.get_template('verification', 0)
+        for template in templates:
+            i += 1
+            if template['classification'] != classification:
+                continue
+            bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
+                                                     cls.tmp_path / ('verification%04d.xyt' % i))
+            if bozorth3_score >= cls.bozorth3_threshold:
+                cls.status.on_verification_result(True)
+                return True
+        cls.status.on_verification_result(False)
         return False
 
     @classmethod
@@ -143,17 +135,16 @@ class FingerprintScanner:
             write_file(cls.tmp_path / ('identification%04d.xyt' % i), template['template'])
             i += 1
 
-        while True:
-            i = -1
-            (_, classification, _, _, fingername) = cls.get_template('identification', 0)
-            for template in templates:
-                i += 1
-                if template['classification'] != classification:
-                    continue
-                bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
-                                                         cls.tmp_path / ('identification%04d.xyt' % i))
-                if bozorth3_score >= cls.bozorth3_threshold:
-                    cls.status.on_identification_result(True, template['name'])
-                    return template
-            cls.status.on_identification_result(False, None)
+        i = -1
+        (_, classification, _, _, fingername) = cls.get_template('identification', 0)
+        for template in templates:
+            i += 1
+            if template['classification'] != classification:
+                continue
+            bozorth3_score = NBIS.get_bozorth3_score(cls.tmp_path / (fingername + '.xyt'),
+                                                     cls.tmp_path / ('identification%04d.xyt' % i))
+            if bozorth3_score >= cls.bozorth3_threshold:
+                cls.status.on_identification_result(True, template['name'])
+                return template
+        cls.status.on_identification_result(False, None)
         return False

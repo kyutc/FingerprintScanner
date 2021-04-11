@@ -23,7 +23,7 @@ class FingerprintStatusInterface:
         pass
 
     @classmethod
-    def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float], username: str) -> None:
+    def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float]) -> None:
         pass
 
     @classmethod

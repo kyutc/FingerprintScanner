@@ -48,9 +48,9 @@ class FingerprintStatus(FingerprintStatusInterface):
             print("User not verified!")
 
     @classmethod
-    def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float], username: str) -> None:
+    def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float]) -> None:
         if success:
-            print("User %s successfully enrolled. Average round-robin bozorth3 scores:")
+            print("User successfully enrolled. Average round-robin bozorth3 scores:")
             print(bozorth3_averages)
         else:
             print("This should never happen")
