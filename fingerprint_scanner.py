@@ -38,13 +38,17 @@ class FingerprintScanner:
 
     @classmethod
     def _discard(cls, prefix: str, i: int) -> None:
-        files = glob.glob(str(cls.tmp_path / cls._fingername(prefix, i)))
+        files = glob.glob(str(cls.tmp_path / cls._fingername(prefix, i, True)))
         for file in files:
             os.remove(file)
 
     @classmethod
-    def _fingername(cls, prefix: str, i: int) -> str:
-        return prefix + 'finger%04d.png' % i
+    def _fingername(cls, prefix: str, i: int, glob_: bool = False) -> str:
+        if glob_:
+            postfix = '*'
+        else:
+            postfix = '.png'
+        return prefix + ('finger%04d' % i) + postfix
 
     @classmethod
     def get_template(cls, prefix: str, i: int) -> (int, str, float, int, str):
