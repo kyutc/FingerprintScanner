@@ -21,6 +21,7 @@ class CameraHelper(object):
         cls.camera.resolution = (config['arducam']['resolution']['x'], config['arducam']['resolution']['y'])
         cls.camera.shutter_speed = config['arducam']['shutterspeed']
         cls.set_focus(config['arducam']['focus'])
+        cls.camera.start_preview()
 
     @classmethod
     def capture_gray_raw(cls, path: Path) -> None:
