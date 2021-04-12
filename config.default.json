@@ -3,8 +3,8 @@
     "lib": "/media/pi/usb/ArduCAM/RaspberryPi/Motorized_Focus_Camera/python/lib/libarducam_vcm.so",
     "focus": 825,
     "resolution": {
-      "x": 1812,
-      "y": 1812
+      "x": 1808,
+      "y": 1808
     },
     "shutterspeed": 30000
   },
@@ -12,7 +12,7 @@
   "nbis": {
     "bin": "/media/pi/usb/nbis/build/bin",
     "nfiq_quality_threshold": 1,
-    "bozorth3_threshold": 200,
+    "bozorth3_threshold": 50,
     "pcasys_confidence_threshold": 0.90,
     "enrollment_candidates_target": 5
   },
