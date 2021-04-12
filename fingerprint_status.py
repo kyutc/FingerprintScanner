@@ -49,7 +49,7 @@ class FingerprintStatus(FingerprintStatusInterface):
         if match:
             print("User identified: %s" % username)
         else:
-            print("User not verified!")
+            print("User not identified!")
 
     @classmethod
     def on_enrollment_result(cls, success: bool, bozorth3_averages: List[float]) -> None:
